@@ -1,0 +1,1 @@
+"../dependencias/lib/bsl/ezdsp5502.c" "../dependencias/lib/bsl/ezdsp5502_gpio.c" "../dependencias/lib/bsl/ezdsp5502_i2c.c" "../dependencias/lib/bsl/ezdsp5502_i2cgpio.c" "../dependencias/lib/bsl/ezdsp5502_mcbsp.c" 
