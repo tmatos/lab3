@@ -1,10 +1,11 @@
 //////////////////////////////////////////////////////////////////////////////
 // * File name: fpa_core.c
 // *                                                                          
-// * Description:  AIC3204 Loop test.
+// * Description:  Implementacao de filtro passa-altas.
 // *                                                                          
 // * Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/ 
 // * Copyright (C) 2011 Spectrum Digital, Incorporated
+// * Copyright (C) 2017 Tiago Matos - tmatos.github.io
 // *                                                                          
 // *                                                                          
 // *  Redistribution and use in source and binary forms, with or without      
@@ -48,14 +49,24 @@ extern Int16 AIC3204_rset( Uint16 regnum, Uint16 regval);
 
 /*
  *
- *  AIC3204 Loop
- *      Loops audio from LINE IN to LINE OUT
+ *  Filtrar entrada com filtro FIR
+ *      Aplica o filtro no sinal em LINE IN para LINE OUT
  *
  */
 Int16 filtrar_entrada( )
 {
-    Int16 sec, msec;
-    Int16 sample, dataLeft, dataRight;
+    //Int16 sec, msec;
+    //Int16 sample;
+    Int16 dataLeft, dataRight;
+    
+    Int16 buff[N]; // buffer circular para guardar as amostras
+    
+    Uint16 i; // indice do buffer indicando a posicao da ultima leitura
+    
+    Uint16 j; // indice para iteracao no buffer circular
+    Uint16 k; // indice para iteracao nos coeficientes
+    
+    Int32 acc; // acumulador usado para a convolucao
   
     /* ---------------------------------------------------------------- *
      *  Configure AIC3204                                               *
@@ -118,22 +129,46 @@ Int16 filtrar_entrada( )
     /* Initialize McBSP */
     EZDSP5502_MCBSP_init( );
     
-    /* Play Loopback for 5 seconds */
+    // set bufffer para valor inicial
+    for( i = 0 ; i < N ; ++i )
+    {
+    	buff[i] = 0;
+    }
+    
     dataLeft = 0;
     dataRight = 0;
-    for ( sec = 0 ; sec < 5 ; sec++ )
+    
+    i = 0;
+    k = 0;
+    
+    for ( ; ; )
     {
-        for ( msec = 0 ; msec < 1000 ; msec++ )
-        {
-            for ( sample = 0 ; sample < 48 ; sample++ )
-            {
-                EZDSP5502_MCBSP_read(&dataLeft);      // RX right channel
-                EZDSP5502_MCBSP_write( dataLeft);      // TX left channel first (FS Low)
-
-                EZDSP5502_MCBSP_read(&dataRight);      // RX left channel
-                EZDSP5502_MCBSP_write( dataRight);      // TX right channel next (FS High)
-            }
-        }
+    	for ( i = 0 ; i < N ; ++i )
+    	{
+            EZDSP5502_MCBSP_read(&dataLeft);      // RX left channel
+        	EZDSP5502_MCBSP_read(&dataRight);      // RX right  channel
+        	
+        	buff[i] = dataLeft;
+        	
+        	k = 0;        	
+        	acc = 0;
+        	
+        	for( j = i ; j < N ; ++j , ++k )
+        	{
+        		acc += h[k] * buff[j]; 
+        	}
+        	
+        	for( j = 0 ; j < i ; ++j , ++k )
+        	{
+        		acc += h[k] * buff[j];
+        	}
+            
+            EZDSP5502_MCBSP_write( acc );      // TX left channel first (FS Low)
+            EZDSP5502_MCBSP_write( acc );      // TX right channel next (FS High)
+            
+            //EZDSP5502_MCBSP_write( dataLeft);      // TX left channel first (FS Low)
+            //EZDSP5502_MCBSP_write( dataRight);      // TX right channel next (FS High)
+    	}
     }
     
     EZDSP5502_MCBSP_close(); // Disable McBSP

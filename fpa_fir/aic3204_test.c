@@ -108,16 +108,24 @@ Int16 aic3204_test( )
     /* Enable McBSP1 */
     EZDSP5502_I2CGPIO_configLine( BSP_SEL1_ENn, OUT );
     EZDSP5502_I2CGPIO_writeLine(  BSP_SEL1_ENn, LOW );
+    
+    /* Filtragem de sinal de entrada */
+    printf( " <-> Filtrando sinal: IN --> h[n] --> OUT \n" );
+    filtrar_entrada( );
 
     /* Codec tests */
     printf( " -> 1 KHz Tone on Headphone.\n" );
     if ( aic3204_tone_headphone( ) )           // Output test
+    {
         return 1;
+    }
         
     EZDSP5502_wait( 100 );  // Wait    
     printf( "<-> Audio Loopback from Stereo IN --> to HP OUT\n" );
     if ( aic3204_loop_linein( ) )              // Loop test
+    {
         return 3;
+    }
         
     return 0;
 }
