@@ -155,16 +155,20 @@ Int16 filtrar_entrada( )
         	
         	for( j = i ; j < N ; ++j , ++k )
         	{
-        		acc += h[k] * buff[j]; 
+        		acc += (Int32)h[k] * (Int32)buff[j]; 
         	}
         	
         	for( j = 0 ; j < i ; ++j , ++k )
         	{
-        		acc += h[k] * buff[j];
+        		acc += (Int32)h[k] * (Int32)buff[j];
         	}
+
+            acc = acc + 0x00004000; // arredondamento ?
+
+            dataLeft = (Int16) (acc >> 15); // converte para os 16 bits
             
-            EZDSP5502_MCBSP_write( acc );      // TX left channel first (FS Low)
-            EZDSP5502_MCBSP_write( acc );      // TX right channel next (FS High)
+            EZDSP5502_MCBSP_write( dataLeft );      // TX left channel first (FS Low)
+            EZDSP5502_MCBSP_write( dataLeft );      // TX right channel next (FS High)
             
             //EZDSP5502_MCBSP_write( dataLeft);      // TX left channel first (FS Low)
             //EZDSP5502_MCBSP_write( dataRight);      // TX right channel next (FS High)
