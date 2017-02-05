@@ -47,6 +47,7 @@ extern Int16 aic3204_tone_headphone( );
 extern Int16 aic3204_loop_linein( );
 
 extern Int16 filtrar_entrada( );
+//extern Int16 filtrar_entrada_dsplib( );
 
 /*
  *
@@ -109,9 +110,13 @@ Int16 aic3204_test( )
     EZDSP5502_I2CGPIO_configLine( BSP_SEL1_ENn, OUT );
     EZDSP5502_I2CGPIO_writeLine(  BSP_SEL1_ENn, LOW );
     
+    //aic3204_tone_headphone( );
+    //aic3204_loop_linein( );
+    
     /* Filtragem de sinal de entrada */
     printf( " <-> Filtrando sinal: IN --> h[n] --> OUT \n" );
     filtrar_entrada( );
+    //filtrar_entrada_dsplib( );
 
     /* Codec tests */
     printf( " -> 1 KHz Tone on Headphone.\n" );
