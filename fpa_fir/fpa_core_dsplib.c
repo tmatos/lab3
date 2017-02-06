@@ -1,10 +1,11 @@
 //////////////////////////////////////////////////////////////////////////////
-// * File name: aic3204_test.c
+// * File name: fpa_core.c
 // *                                                                          
-// * Description:  AIC3204 Test common functions.
+// * Description:  Implementacao de filtro passa-altas.
 // *                                                                          
 // * Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/ 
 // * Copyright (C) 2011 Spectrum Digital, Incorporated
+// * Copyright (C) 2017 Tiago Matos - tmatos.github.io
 // *                                                                          
 // *                                                                          
 // *  Redistribution and use in source and binary forms, with or without      
@@ -37,113 +38,64 @@
 // *                                                                          
 //////////////////////////////////////////////////////////////////////////////
 
-#define AIC3204_I2C_ADDR 0x18
-#include "ezdsp5502.h"
-#include "ezdsp5502_i2c.h"
-#include "ezdsp5502_i2cgpio.h"
 #include "stdio.h"
+#include "ezdsp5502.h"
+#include "ezdsp5502_mcbsp.h"
+#include "csl_mcbsp.h"
+
+#include "dsplib/dsplib.h"
+
+#include "util.h"
 
 #include "CONFIG.H"
 
-extern Int16 aic3204_tone_headphone( );
-extern Int16 aic3204_loop_linein( );
-
-#ifndef USE_DSP_LIB
-extern Int16 filtrar_entrada( );
-#endif
-
 #ifdef USE_DSP_LIB
-extern Int16 filtrar_entrada_dsplib( );
-#endif
+
+#include "fpa_fir_eqrple_8k.h"
+
+extern Int16 AIC3204_rset( Uint16 regnum, Uint16 regval);
 
 /*
  *
- *  AIC3204_rget( regnum, *regval )
- *
- *      Return value of codec register regnum
- *
- */
-Int16 AIC3204_rget(  Uint16 regnum, Uint16* regval )
-{
-    Int16  retcode = 0;
-    Uint16 cmd[2];
-
-    cmd[0] = regnum & 0x007F;       // 7-bit Device Register
-    cmd[1] = 0;
-
-    /* Send AIC3204 register name */
-    retcode |= EZDSP5502_I2C_write( AIC3204_I2C_ADDR, cmd, 1 );
-    
-    /* Return AIC3204 register value */
-    retcode |= EZDSP5502_I2C_read( AIC3204_I2C_ADDR, cmd, 1 );
-    *regval = cmd[0];
-    EZDSP5502_waitusec( 50 );
-    
-    return retcode;
-}
-
-/*
- *
- *  AIC3204_rset( regnum, regval )
- *
- *      Set codec register regnum to value regval
+ *  Filtrar entrada com filtro FIR
+ *      Aplica o filtro no sinal em LINE IN para LINE OUT
  *
  */
-Int16 AIC3204_rset( Uint16 regnum, Uint16 regval )
+Int16 filtrar_entrada_dsplib( )
 {
-    Uint16 cmd[2];
-    cmd[0] = regnum & 0x007F;       // 7-bit Device Register
-    cmd[1] = regval;                // 8-bit Register Data
-
-    EZDSP5502_waitusec( 100 );
-
-    /* Write to AIC3204 Register */
-    return EZDSP5502_I2C_write( AIC3204_I2C_ADDR, cmd, 2 );
-}
-
-/*
- * 
- *  aic3204_test( )
- *
- *      Test different configurations of the AIC3204
- */
-Int16 aic3204_test( )
-{
-    /* Set to McBSP1 mode */
-    EZDSP5502_I2CGPIO_configLine( BSP_SEL1, OUT );
-    EZDSP5502_I2CGPIO_writeLine(  BSP_SEL1, LOW );
+    //Int16 sec, msec;
+    //Int16 sample;
+    Int16 dataLeft, dataRight;
     
-    /* Enable McBSP1 */
-    EZDSP5502_I2CGPIO_configLine( BSP_SEL1_ENn, OUT );
-    EZDSP5502_I2CGPIO_writeLine(  BSP_SEL1_ENn, LOW );
+    Int16 x[1];
+	Int16 dbuffer[N+2] = {0};
+	Int16 r[1];
+	
+    InicializaAudio();
     
-    //aic3204_tone_headphone( );
-    //aic3204_loop_linein( );
+    dataLeft = 0;
+    dataRight = 0;
     
-    /* Filtragem de sinal de entrada */
-    printf( " <-> Filtrando sinal: IN --> h[n] --> OUT \n" );
-    
-    #ifndef USE_DSP_LIB
-    filtrar_entrada( );
-    #endif
-    
-    #ifdef USE_DSP_LIB
-    filtrar_entrada_dsplib( );
-    #endif
-
-    /* Codec tests */
-    printf( " -> 1 KHz Tone on Headphone.\n" );
-    if ( aic3204_tone_headphone( ) )           // Output test
+    for ( ; ; )
     {
-        return 1;
-    }
+        EZDSP5502_MCBSP_read(&dataLeft);      // RX left channel
+    	EZDSP5502_MCBSP_read(&dataRight);      // RX right  channel
+    	
+    	x[0] = dataLeft;
+
+		fir(x, h, r, dbuffer, 1, N);
+    	
+        EZDSP5502_MCBSP_write( r[0] );      // TX left channel first (FS Low)
+        EZDSP5502_MCBSP_write( r[0] );      // TX right channel next (FS High)
         
-    EZDSP5502_wait( 100 );  // Wait    
-    printf( "<-> Audio Loopback from Stereo IN --> to HP OUT\n" );
-    if ( aic3204_loop_linein( ) )              // Loop test
-    {
-        return 3;
+        //EZDSP5502_MCBSP_write( dataLeft);      // TX left channel first (FS Low)
+        //EZDSP5502_MCBSP_write( dataRight);      // TX right channel next (FS High)
     }
-        
+    
+    EZDSP5502_MCBSP_close(); // Disable McBSP
+    AIC3204_rset( 1, 1 );    // Reset codec
+    
     return 0;
 }
+
+#endif
