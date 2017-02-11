@@ -58,7 +58,7 @@ Int16 filtrar_entrada( )
     
     for ( ; ; )
     {
-    	for ( i = N-1 ; i >= 0 ; --i )
+    	for ( i = 0 ; i < N ; ++i )
     	{
             EZDSP5502_MCBSP_read(&dataLeft);    // RX left channel
         	EZDSP5502_MCBSP_read(&dataRight);   // RX right  channel
