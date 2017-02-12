@@ -38,6 +38,7 @@
 <listOptionValue builtIn="false" value="&quot;$(GEN_CMDS_QUOTED)&quot;"/>
 </option>
 <option id="com.ti.ccstudio.buildDefinitions.C5500_4.3.linkerID.LIBRARY.1491307374" superClass="com.ti.ccstudio.buildDefinitions.C5500_4.3.linkerID.LIBRARY" valueType="libs">
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/fpafir/dsplib/55xdspx_large_r2_FIR_only.lib}&quot;"/>
 <listOptionValue builtIn="false" value="&quot;csl5502x.lib&quot;"/>
 <listOptionValue builtIn="false" value="&quot;ezdsp5502bsl.lib&quot;"/>
 <listOptionValue builtIn="false" value="&quot;rts55x.lib&quot;"/>
@@ -63,7 +64,7 @@
 <resourceConfiguration exclude="false" id="com.ti.ccstudio.buildDefinitions.C5500.Debug.354775026./fpafir/fpa_core.c" name="fpa_core.c" rcbsApplicability="disable" resourcePath="/fpafir/fpa_core.c" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C5500_4.3.exe.compilerDebug.940433700./fpafir/fpa_core.c">
 <tool id="com.ti.ccstudio.buildDefinitions.C5500_4.3.exe.compilerDebug.940433700./fpafir/fpa_core.c" name="C5500 Compiler" superClass="com.ti.ccstudio.buildDefinitions.C5500_4.3.exe.compilerDebug.940433700"/>
 </resourceConfiguration>
-<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C5500.Debug.354775026./fpafir/fpa_core_dsplib.c" name="fpa_core_dsplib.c" rcbsApplicability="disable" resourcePath="/fpafir/fpa_core_dsplib.c" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C5500_4.3.exe.compilerDebug.940433700./fpafir/fpa_core_dsplib.c">
+<resourceConfiguration exclude="false" id="com.ti.ccstudio.buildDefinitions.C5500.Debug.354775026./fpafir/fpa_core_dsplib.c" name="fpa_core_dsplib.c" rcbsApplicability="disable" resourcePath="/fpafir/fpa_core_dsplib.c" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C5500_4.3.exe.compilerDebug.940433700./fpafir/fpa_core_dsplib.c">
 <tool id="com.ti.ccstudio.buildDefinitions.C5500_4.3.exe.compilerDebug.940433700./fpafir/fpa_core_dsplib.c" name="C5500 Compiler" superClass="com.ti.ccstudio.buildDefinitions.C5500_4.3.exe.compilerDebug.940433700"/>
 </resourceConfiguration>
 </configuration>
