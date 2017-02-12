@@ -14,7 +14,7 @@
 
 #include "util.h"
 
-#include "fpa_iir_elip_8k_tf.h"
+#include "fpa_iir_elip_8k_tf_float.h"
 
 extern Int16 AIC3204_rset( Uint16 regnum, Uint16 regval);
 
@@ -28,12 +28,15 @@ Int16 filtrar_entrada( )
 {	
     Int16 dataLeft;
     Int16 dataRight;
-    Uint16 i; // indice
-    Uint16 j; // indice
-    Uint16 k; // indice
+    
+    Int16 i; // indice
+    Int16 j; // indice
+    Int16 k; // indice
+    
+    double x[N]; // vetor usado para delay line
+    double y[N]; // vetor usado para delay line
+    
     Int32 acc; // acumulador usado
-    Int16 x[N]; // vetor usado para delay line
-    Int16 y[N]; // vetor usado para delay line
     
     // set vetor para valor inicial
     for( i = 0 ; i < N ; ++i )
@@ -46,37 +49,41 @@ Int16 filtrar_entrada( )
     
     for ( ; ; )
     {	
-    	for( i = N-1 ; i >= 0 ; --i )
+    	for( i = 0 ; i < N ; ++i )
     	{
 	        EZDSP5502_MCBSP_read(&dataLeft);    // RX left channel
 	    	EZDSP5502_MCBSP_read(&dataRight);   // RX right  channel
 	    	
-	    	x[i] = dataLeft;
+	    	x[i] = (double) dataLeft;
 	    	
 	    	k = 0;
 	    	acc = 0;
-	    	
-	    	for( j = i ; j < N ; ++j , ++k )
-	    	{
-	    	    acc += (Int32)x[j] * (Int32)B[k];
-	    	    acc -= (Int32)y[j] * (Int32)A[k];
-	    	}
-	    	
-        	for( j = 0 ; j < i ; ++j , ++k )
-        	{
-        		acc += (Int32)x[j] * (Int32)B[k];
-	    	    acc -= (Int32)y[j] * (Int32)A[k];
-        	}
+        
+		    for( j = i ; j >= 0 ; --j , ++k )
+		    {
+		      acc += x[j] * B[k];
+		      acc -= y[j] * A[k];
+		    }
+		    
+		    for( j = N-1 ; j > i ; --j , ++k )
+		    {
+		      acc += x[j] * B[k];
+		      acc -= y[j] * A[k];
+		    }
+		
+		    y[i] = acc;
         	
-        	y[i] = (Int16) acc;
+        	//acc += 0x400;                  // Rounding
+    		//y[i] = (Int16)(acc >> 10);     // Place the Q15 result into y[0]
         	
 			//acc = acc + 0x00004000; // arredondamento
 	    	//dataLeft = (Int16) (acc >> 15); // converte p/ 16 bits
+	    	
+        	dataLeft = (Int16) (acc/* * 2*/); // converte p/ 16 bits
 	        
 	        EZDSP5502_MCBSP_write( dataLeft );  // TX left channel first (FS Low)
 	        EZDSP5502_MCBSP_write( dataLeft );  // TX right channel next (FS High)
     	}
-			
     }
     
     EZDSP5502_MCBSP_close(); // Disable McBSP
