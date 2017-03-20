@@ -82,7 +82,7 @@ Int16 h_hi[N] = {
 #define MID 1
 #define HI 2
 
-Int16 ganho[3] = { 1, 1, 1 };
+double ganho[3] = { 1.0, 1.0, 1.0 };
 
 Int16 impulso = 1;
 
@@ -146,8 +146,6 @@ int main()
     i = 0;
     k = 0;
     
-    ////printf("h = [ ");
-    
     //for ( s = 0 ; s < 10 ; s++ )
     while(!feof(fp))
     {
@@ -206,20 +204,16 @@ int main()
 
         //=====================================================================
 
-        acc[LOW] *= ganho[LOW];
-        acc[MID] *= ganho[MID];
-        acc[HI] *= ganho[HI];
+        // converte para os 16 bits enquanto aplica os ganhos
 
-        dataLeft = //(Int16)(acc[LOW] >> 15) + 
-                   //(Int16)(acc[MID] >> 15) + 
-                   (Int16)(acc[HI] >> 15); // converte para os 16 bits
+        dataLeft = (Int16)( (double)(acc[LOW] >> 15) * ganho[LOW] +
+                            (double)(acc[MID] >> 15) * ganho[MID] +
+                            (double)(acc[HI] >> 15)  * ganho[HI] );
 
         printf("%hd ", dataLeft);
       }
 
     }
-
-    ////printf("];\n");
 
     fclose(fp);
 

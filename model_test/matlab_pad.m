@@ -57,4 +57,9 @@ plot( abs( fft(in)(1:4000) ) );
 figure;
 plot( abs( fft(out)(1:4000) ) );
 
+plot( 20*log10( abs( fft(in)(1:4000) ) ) );
+figure;
+plot( 20*log10( abs( fft(out)(1:4000) ) ) );
+
+soundsc(out, 8000, 16);
 
