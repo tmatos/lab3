@@ -30,3 +30,31 @@ out = filter2(h,inputq);
 plot(abs(fft(out)))
 %ou
 plot( 20*log10( abs( fft(h)(1:4000) ) ) )
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Fsam = 8000;
+t = 0:1/Fsam:1;
+input = sin(2*pi*100*t) + sin(2*pi*1000*t) + sin(2*pi*3000*t);
+
+plot( abs( fft(input)(1:4000) ) )
+
+inputq = round(input * 2^13 );
+
+fd = fopen("3sine.dat","w");
+fprintf(fd, "%d ", inputq);
+fclose(fd);
+
+out = filter2(h,inputq);
+
+plot(abs(fft(out)))
+%ou
+plot( 20*log10( abs( fft(h)(1:4000) ) ) )
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+plot( abs( fft(in)(1:4000) ) );
+figure;
+plot( abs( fft(out)(1:4000) ) );
+
+
