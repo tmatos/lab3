@@ -20,9 +20,15 @@
 
 extern Int16 AIC3204_rset( Uint16 regnum, Uint16 regval);
 
-#include "filter_coefs/8k/lowpass.h"
-#include "filter_coefs/8k/midpass.h"
-#include "filter_coefs/8k/hipass.h"
+#if FS_8K
+  #include "filter_coefs/8k/lowpass.h"
+  #include "filter_coefs/8k/midpass.h"
+  #include "filter_coefs/8k/hipass.h"
+#else
+  #include "filter_coefs/48k/lowpass.h"
+  #include "filter_coefs/48k/midpass.h"
+  #include "filter_coefs/48k/hipass.h"
+#endif
 
 #define LOW 0
 #define MID 1
